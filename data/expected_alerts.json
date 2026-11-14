@@ -1,0 +1,92 @@
+{
+  "seed": 20261114,
+  "expected": [
+    {
+      "ruleId": "WT-1",
+      "ownerId": "OWN-001",
+      "instrument": "Azentio-ALPHA",
+      "evidence": [
+        "WT1-1"
+      ]
+    },
+    {
+      "ruleId": "WT-1",
+      "ownerId": "OWN-001",
+      "instrument": "Azentio-ALPHA",
+      "evidence": [
+        "WT1-2"
+      ]
+    },
+    {
+      "ruleId": "WT-1",
+      "ownerId": "OWN-001",
+      "instrument": "Azentio-ALPHA",
+      "evidence": [
+        "WT1-3"
+      ]
+    },
+    {
+      "ruleId": "WT-2",
+      "ownerId": "OWN-002",
+      "instrument": "Azentio-1",
+      "evidence": [
+        "WT2-1A",
+        "WT2-1B"
+      ]
+    },
+    {
+      "ruleId": "WT-2",
+      "ownerId": "OWN-004",
+      "instrument": "Azentio-2",
+      "evidence": [
+        "WT2-2A",
+        "WT2-2B"
+      ]
+    },
+    {
+      "ruleId": "WT-2",
+      "ownerId": "OWN-006",
+      "instrument": "Azentio-3",
+      "evidence": [
+        "WT2-3A",
+        "WT2-3B"
+      ]
+    },
+    {
+      "ruleId": "SP-1",
+      "ownerId": "OWN-012",
+      "instrument": "Azentio-LAYER-1",
+      "evidence": [
+        "SP1-1-NEW",
+        "SP1-1-CANCEL",
+        "SP1-1-EXEC"
+      ]
+    },
+    {
+      "ruleId": "SP-1",
+      "ownerId": "OWN-014",
+      "instrument": "Azentio-LAYER-2",
+      "evidence": [
+        "SP1-2-NEW",
+        "SP1-2-CANCEL",
+        "SP1-2-EXEC"
+      ]
+    },
+    {
+      "ruleId": "SP-1",
+      "ownerId": "OWN-016",
+      "instrument": "Azentio-LAYER-3",
+      "evidence": [
+        "SP1-3-NEW",
+        "SP1-3-CANCEL",
+        "SP1-3-EXEC"
+      ]
+    }
+  ],
+  "decoys": [
+    "DECOY-TIME",
+    "DECOY-QTY",
+    "DECOY-SP-NOEXEC",
+    "DECOY-SP-SLOW"
+  ]
+}
