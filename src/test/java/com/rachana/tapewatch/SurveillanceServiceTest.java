@@ -23,7 +23,7 @@ import com.rachana.tapewatch.api.*;
 class SurveillanceServiceTest {
     private SurveillanceService service(AlertRepository alerts, EventRepository events, int qtyPct) {
         RuleProperties props=new RuleProperties(new RuleProperties.Wash(300,new BigDecimal(qtyPct),new BigDecimal("0.5"),"HIGH","MEDIUM"));
-        return new SurveillanceService(alerts,events,new MemoryRollingWindowStore(),props,new Masker("test-secret"),new ObjectMapper());
+        return new SurveillanceService(alerts,events,new MemoryRollingWindowStore(),props,new Masker("test-secret"),new ObjectMapper().findAndRegisterModules());
     }
     private MarketEvent trade(String id,String buy,String sell,int qty,int second){return new MarketEvent(id,"TRADE",null,null,"XYZ",null,new BigDecimal(qty),new BigDecimal("10.00"),id,buy,sell,"B-"+id,"S-"+id,Instant.parse("2026-11-14T00:00:00Z").plusSeconds(second));}
     private MarketEvent order(String id,String type,String account,String side,int qty,int second){return new MarketEvent(id,type,"ORDER-1",account,"XYZ",side,new BigDecimal(qty),new BigDecimal("10"),null,null,null,null,null,Instant.parse("2026-11-14T00:00:00Z").plusSeconds(second));}
@@ -36,20 +36,20 @@ class SurveillanceServiceTest {
     }
     @Test void detectsRoundTripInsideWindow(){
         AlertRepository alerts=mock(AlertRepository.class);EventRepository events=mock(EventRepository.class);var s=service(alerts,events,5);
-        s.ingest(List.of(trade("buy","ACC-003","ACC-004",100,0),trade("sell","ACC-004","ACC-003",104,60)));
+        s.ingest(List.of(trade("buy","ACC-003","ACC-004",100,0),trade("sell","ACC-005","ACC-003",104,60)));
         verify(alerts).save(argThat(a->a.getRuleId().equals("WT-2")));
     }
     @Test void ignoresRoundTripOutsideWindowAndOutsideQuantityTolerance(){
         AlertRepository a1=mock(AlertRepository.class);var s1=service(a1,mock(EventRepository.class),5);
-        s1.ingest(List.of(trade("b1","ACC-003","ACC-004",100,0),trade("s1","ACC-004","ACC-003",100,301)));verify(a1,never()).save(any());
+        s1.ingest(List.of(trade("b1","ACC-003","ACC-004",100,0),trade("s1","ACC-005","ACC-003",100,301)));verify(a1,never()).save(any());
         AlertRepository a2=mock(AlertRepository.class);var s2=service(a2,mock(EventRepository.class),5);
-        s2.ingest(List.of(trade("b2","ACC-003","ACC-004",100,0),trade("s2","ACC-004","ACC-003",120,30)));verify(a2,never()).save(any());
+        s2.ingest(List.of(trade("b2","ACC-003","ACC-004",100,0),trade("s2","ACC-005","ACC-003",120,30)));verify(a2,never()).save(any());
     }
     @Test void changedConfiguredToleranceChangesOutcome(){
         AlertRepository strict=mock(AlertRepository.class);var s1=service(strict,mock(EventRepository.class),5);
-        s1.ingest(List.of(trade("b3","ACC-003","ACC-004",100,0),trade("s3","ACC-004","ACC-003",110,30)));verify(strict,never()).save(any());
+        s1.ingest(List.of(trade("b3","ACC-003","ACC-004",100,0),trade("s3","ACC-005","ACC-003",110,30)));verify(strict,never()).save(any());
         AlertRepository relaxed=mock(AlertRepository.class);var s2=service(relaxed,mock(EventRepository.class),15);
-        s2.ingest(List.of(trade("b4","ACC-003","ACC-004",100,0),trade("s4","ACC-004","ACC-003",110,30)));verify(relaxed).save(argThat(a->a.getRuleId().equals("WT-2")));
+        s2.ingest(List.of(trade("b4","ACC-003","ACC-004",100,0),trade("s4","ACC-005","ACC-003",110,30)));verify(relaxed).save(argThat(a->a.getRuleId().equals("WT-2")));
     }
     @Test void duplicateEventIdIsNotCountedTwice(){
         AlertRepository a=mock(AlertRepository.class);EventRepository e=mock(EventRepository.class);when(e.existsById("dupe")).thenReturn(true);
@@ -59,13 +59,13 @@ class SurveillanceServiceTest {
     @Test void alertDetailMasksRawAccountAndOwnerIds(){
         AlertRepository alerts=mock(AlertRepository.class);EventRepository events=mock(EventRepository.class);
         MarketEvent evidence=trade("evid","ACC-001","ACC-003",100,0);
-        try {when(events.findById("evid")).thenReturn(java.util.Optional.of(new EventEntity("evid",new ObjectMapper().writeValueAsString(evidence),evidence.ts())));}catch(Exception ex){throw new AssertionError(ex);}
+        try {when(events.findById("evid")).thenReturn(java.util.Optional.of(new EventEntity("evid",new ObjectMapper().findAndRegisterModules().writeValueAsString(evidence),evidence.ts())));}catch(Exception ex){throw new AssertionError(ex);}
         var s=service(alerts,events,5);AlertEntity alert=new AlertEntity("WT-1","OWN-secret","XYZ","HIGH",evidence.ts(),"evid");
-        try {String body=new ObjectMapper().writeValueAsString(s.alertView(alert));assertFalse(body.contains("ACC-001"));assertFalse(body.contains("ACC-003"));assertFalse(body.contains("OWN-secret"));}catch(Exception ex){throw new AssertionError(ex);}
+        try {String body=new ObjectMapper().findAndRegisterModules().writeValueAsString(s.alertView(alert));assertFalse(body.contains("ACC-001"));assertFalse(body.contains("ACC-003"));assertFalse(body.contains("OWN-secret"));}catch(Exception ex){throw new AssertionError(ex);}
     }
     @Test void alertListAndDetailApiNeverReturnRawAccountOrOwnerIds() throws Exception {
         AlertRepository alerts=mock(AlertRepository.class);EventRepository events=mock(EventRepository.class);
-        MarketEvent evidence=trade("api-evid","ACC-001","ACC-003",100,0);ObjectMapper mapper=new ObjectMapper();
+        MarketEvent evidence=trade("api-evid","ACC-001","ACC-003",100,0);ObjectMapper mapper=new ObjectMapper().findAndRegisterModules();
         when(events.findById("api-evid")).thenReturn(java.util.Optional.of(new EventEntity("api-evid",mapper.writeValueAsString(evidence),evidence.ts())));
         AlertEntity alert=new AlertEntity("WT-1",new Masker("test-secret").token("OWN-001"),"XYZ","HIGH",evidence.ts(),"api-evid");
         when(alerts.findById(7L)).thenReturn(java.util.Optional.of(alert));
