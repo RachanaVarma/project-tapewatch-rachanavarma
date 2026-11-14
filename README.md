@@ -60,7 +60,7 @@ The API listens at `http://localhost:8080`. `POST /api/v1/events` accepts an arr
 
 ## Tests
 
-Run `mvn test` for offline unit tests. The test profile uses in-memory fakes and does not require Docker. Run UI tests from `ui` with `npm test`.
+Run `mvn test` for backend unit tests. They use mocks and the in-memory window store, so they do not require Docker or a live database. Run UI tests from `ui` with `npm test`.
 
 ## Design decisions and gaps
 
