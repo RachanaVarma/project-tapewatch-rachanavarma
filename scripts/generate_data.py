@@ -19,8 +19,8 @@ def layer_order(eid, kind, account, instrument, order_id, seconds):
 # Thirty deterministic planted events (three self-trades and three round trips).
 for n in range(3): events.append(trade(f"WT1-{n+1}","ACC-001","ACC-002","Azentio-ALPHA",100+n,100.0,100+n*10))
 for n in range(3):
-    owner=f"ACC-{3+n*2:03d}"; other=f"ACC-{4+n*2:03d}"; sec=200+n*100
-    events.extend([trade(f"WT2-{n+1}A",owner,other,f"Azentio-{n+1}",200,50.0,sec),trade(f"WT2-{n+1}B",other,owner,f"Azentio-{n+1}",204,50.1,sec+30)])
+    owner=f"ACC-{3+n*2:03d}"; counterparty_a=f"ACC-{4+n*2:03d}"; counterparty_b=f"ACC-{5+n*2:03d}"; sec=200+n*100
+    events.extend([trade(f"WT2-{n+1}A",owner,counterparty_a,f"Azentio-{n+1}",200,50.0,sec),trade(f"WT2-{n+1}B",counterparty_b,owner,f"Azentio-{n+1}",204,50.1,sec+30)])
 # Two near misses: one outside the time window, one outside quantity tolerance.
 events.extend([trade("DECOY-TIME-A","ACC-009","ACC-010","DECOY-TIME",200,25,700),trade("DECOY-TIME-B","ACC-010","ACC-009","DECOY-TIME",200,25,1001)])
 events.extend([trade("DECOY-QTY-A","ACC-011","ACC-012","DECOY-QTY",100,25,1100),trade("DECOY-QTY-B","ACC-012","ACC-011","DECOY-QTY",120,25,1110)])
