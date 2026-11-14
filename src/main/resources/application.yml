@@ -1,0 +1,29 @@
+server:
+  port: ${API_PORT:8080}
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/${DB_NAME:tapewatch}}
+    username: ${DB_USER:tapewatch}
+    password: ${DB_PASSWORD:tapewatch}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+surveillance:
+  masking-secret: ${MASKING_SECRET:local-development-secret-change-before-deploy}
+  ui-origin: ${UI_ORIGIN:http://localhost:5173}
+  rules:
+    wash:
+      window-seconds: 300
+      qty-tolerance-pct: 5
+      price-tolerance-pct: 0.5
+      wt1-severity: HIGH
+      wt2-severity: MEDIUM
+    sp1:
+      window-seconds: 60
+      min-placed-qty: 10000
+      min-cancel-ratio: 0.8
+      max-order-lifetime-seconds: 5
+      severity: HIGH
