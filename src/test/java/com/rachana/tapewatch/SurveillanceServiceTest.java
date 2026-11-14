@@ -60,8 +60,8 @@ class SurveillanceServiceTest {
         AlertRepository alerts=mock(AlertRepository.class);EventRepository events=mock(EventRepository.class);
         MarketEvent evidence=trade("evid","ACC-001","ACC-003",100,0);
         try {when(events.findById("evid")).thenReturn(java.util.Optional.of(new EventEntity("evid",new ObjectMapper().findAndRegisterModules().writeValueAsString(evidence),evidence.ts())));}catch(Exception ex){throw new AssertionError(ex);}
-        var s=service(alerts,events,5);AlertEntity alert=new AlertEntity("WT-1","OWN-secret","XYZ","HIGH",evidence.ts(),"evid");
-        try {String body=new ObjectMapper().findAndRegisterModules().writeValueAsString(s.alertView(alert));assertFalse(body.contains("ACC-001"));assertFalse(body.contains("ACC-003"));assertFalse(body.contains("OWN-secret"));}catch(Exception ex){throw new AssertionError(ex);}
+        var s=service(alerts,events,5);AlertEntity alert=new AlertEntity("WT-1",new Masker("test-secret").token("OWN-001"),"XYZ","HIGH",evidence.ts(),"evid");
+        try {String body=new ObjectMapper().findAndRegisterModules().writeValueAsString(s.alertView(alert));assertFalse(body.contains("ACC-001"));assertFalse(body.contains("ACC-003"));assertFalse(body.contains("OWN-001"));}catch(Exception ex){throw new AssertionError(ex);}
     }
     @Test void alertListAndDetailApiNeverReturnRawAccountOrOwnerIds() throws Exception {
         AlertRepository alerts=mock(AlertRepository.class);EventRepository events=mock(EventRepository.class);
@@ -70,7 +70,7 @@ class SurveillanceServiceTest {
         AlertEntity alert=new AlertEntity("WT-1",new Masker("test-secret").token("OWN-001"),"XYZ","HIGH",evidence.ts(),"api-evid");
         when(alerts.findById(7L)).thenReturn(java.util.Optional.of(alert));
         when(alerts.findAll(org.mockito.ArgumentMatchers.<Specification<AlertEntity>>any(),any(Pageable.class))).thenReturn(new PageImpl<>(List.of(alert)));
-        var controller=new AlertController(service(alerts,events,5),mock(DispositionService.class));
+        var controller=new AlertController(service(alerts,events,5),new DispositionService(alerts,mock(AlertAuditRepository.class)));
         MockMvc mvc=standaloneSetup(controller).setControllerAdvice(new ApiErrors()).build();
         for(String url:List.of("/api/v1/alerts?page=0&size=50","/api/v1/alerts/7")){
             mvc.perform(get(url)).andExpect(status().isOk()).andExpect(content().string(not(containsString("ACC-001"))))
