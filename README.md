@@ -38,20 +38,36 @@ npm run dev
 
 In a clean checkout, run `npm test` from `ui` for the React Testing Library checks.
 
+## GitHub submission
+
+The local repository has a `main` foundation and the `feat/surveillance-review` branch with focused commits. To meet the public-repository and pull-request steps:
+
+1. Create a **new, empty, public** GitHub repository after the assignment start time. Do not initialize it with a README.
+2. From this directory, add its URL and push both branches:
+
+   ```sh
+   git remote add origin https://github.com/<your-username>/<new-repo>.git
+   git push -u origin main
+   git push -u origin feat/surveillance-review
+   ```
+
+3. Open a pull request from `feat/surveillance-review` into `main`, then merge it.
+4. Reply to the hiring email with the repository URL before the deadline.
+
 The API listens at `http://localhost:8080`. `POST /api/v1/events` accepts an array of `ORDER_NEW`, `ORDER_CANCEL`, and `TRADE` event objects. Duplicate event IDs are ignored. Validation errors return HTTP 400 with invalid field names. Alerts are available at `GET /api/v1/alerts` (filters: `ruleId`, `status`, `instrument`, and `page`/`size`) and `GET /api/v1/alerts/{id}`.
 
 `data/events.json` contains 2,127 deterministic synthetic events. `data/expected_alerts.json` is the planted ground truth: 3 WT-1, 3 WT-2, 3 SP-1 and 4 near-miss decoys. Replay prints per-rule matches and extra-alert counts. The feed is intentionally synthetic.
 
 ## Tests
 
-Run `mvn test` for offline unit tests. The test profile uses in-memory fakes and does not require Docker. Run UI tests from `ui` with `npm test`.
+Run `mvn test` for backend unit tests. They use mocks and the in-memory window store, so they do not require Docker or a live database. Run UI tests from `ui` with `npm test`.
 
 ## Design decisions and gaps
 
 - All rule window comparisons use event timestamps; no wall-clock timestamp participates in detection.
 - WT-2 compares quantity and price as a percentage of the larger value and uses the configured thresholds in `application.yml`.
 - PostgreSQL stores accepted events and alert evidence IDs; Flyway owns the schema.
-- WT-1, WT-2 and SP-1 run against the in-memory `RollingWindowStore`; an SP-1 cooldown suppresses repeated alerts. Redis-backed shared state, Redis TTL, Redis integration tests, a load script, and measured load numbers are not implemented. The in-memory store is per process and must not be used for multi-instance production operation. The UI supports queue filters, server-side pagination, evidence review, audit history, and closing false positives; escalation controls remain to do.
+- WT-1, WT-2 and SP-1 run against the in-memory `RollingWindowStore`; an SP-1 cooldown suppresses repeated alerts. Redis-backed shared state, Redis TTL, Redis integration tests, a load script, and measured load numbers are not implemented. The in-memory store is per process and must not be used for multi-instance production operation. The UI supports queue filters, server-side pagination, evidence review, audit history, escalation, and closing false positives.
 - The replay and local setup are provided, but this environment did not have a Java/Maven runtime, so no measured test or latency output is claimed. Run the documented commands and paste real output into this README before submission.
 - Next: Redis sorted-set implementation with TTL and cross-instance cooldown, Redis integration tests, load measurement, and UI escalation controls.
 
