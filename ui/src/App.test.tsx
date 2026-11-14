@@ -1,0 +1,4 @@
+import {beforeEach,describe,expect,it,vi} from 'vitest';import{render,screen,fireEvent}from'@testing-library/react';import App from './App';
+const sample=[{id:1,ruleId:'WT-1',ownerToken:'OWN-a1b2c3d4e5',instrument:'XYZ',severity:'HIGH',status:'OPEN',eventTime:'2026-11-14T06:00:00Z'}];
+beforeEach(()=>{vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>sample}));});
+describe('alert queue',()=>{it('renders rows from the alerts API',async()=>{render(<App/>);expect(await screen.findByText('OWN-a1b2c3d4e5')).toBeInTheDocument();expect(screen.getByText('XYZ')).toBeInTheDocument();});it('blocks closing without a sufficiently long note',async()=>{render(<App/>);fireEvent.click(await screen.findByText('OWN-a1b2c3d4e5'));fireEvent.click(screen.getByText('Close as false positive'));expect(await screen.findByRole('alert')).toHaveTextContent('at least 10 characters');});});
